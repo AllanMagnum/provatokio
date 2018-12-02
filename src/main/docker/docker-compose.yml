@@ -1,0 +1,36 @@
+version: "2.1"
+
+services:
+  mysqldb:
+    image: mysql
+    environment:
+      MYSQL_DATABASE: TOKIO_MARINE_DB
+      MYSQL_ROOT_PASSWORD: magnum
+    #volumes:
+    #- ${HOME}/Docker/mysql/data/:/var/lib/mysql
+    ports:
+    - "3306:3306"
+    networks:
+    - tokio-marine-network:
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  provatokio:
+    image: pprovatokio:0.0.1-SNAPSHOT
+    environment:
+      DB_HOST: jdbc:mysql://mysqldb:3306/TOKIO_MARINE_DB
+      DB_USER: root
+      DB_PASS: magnum
+    ports:
+    - "8080:8080"
+    networks:
+    - java-challenge-network
+    depends_on:
+     - mysqldb       
+    restart: on-failure
+
+networks:
+  tokio-marine-network:
+    driver: bridge
